@@ -139,6 +139,7 @@ public class Main extends JFrame {
         lblsumaachitata = new JLabel();
         txtsumaachitata = new JTextField();
         lbldebite = new JLabel();
+
         lblsold = new JLabel();
         sold = new JLabel();
 
@@ -635,19 +636,19 @@ public class Main extends JFrame {
                         Tools.m("Modificarea s-a facut cu succes");
                     else Tools.m("Eroare la modificare");
                 }
-					 
+
 					 /*
 					 else if(frm.getTitle() == "Adaugare plati")
 				      {
 						  int iddebit = t.GetIdDebit(compersoana.getSelectedIndex()+1, comdebite.getSelectedIndex()+1);
 				    	  if(t.UpdatePlata( iddebit, txtdataplata.getText(), txtsumaachitata.getText()))
 				    	  {
-				    		//refresh comdebite			    	  
+				    		//refresh comdebite
 					    	  String olddeb = comdebite.getSelectedItem().toString(); //Tools.m("1");
 					    	  comdebite.removeItemAt(comdebite.getSelectedIndex()); //Tools.m("2");
 					    	  comdebite.addItem(Float.toString(Float.parseFloat(olddeb)-Float.parseFloat(txtsumaachitata.getText()))); //Tools.m("3");
 					    	  comdebite.setSelectedIndex(comdebite.getItemCount()-1);//Tools.m("4");
-					    	  Tools.m("Adaugarea s-a facut cu succes");	  
+					    	  Tools.m("Adaugarea s-a facut cu succes");
 				    	  }
 				    	  else Tools.m("Eroare la modificare");
 				      }
@@ -663,7 +664,7 @@ public class Main extends JFrame {
                         return;
                     }
                     //r = milisecunde
-								
+
 								/*
 								 *   1 zi = 24 h; 1 h = 60 min = 3600 sec = 3600000 milisec
 								 */
@@ -729,7 +730,7 @@ public class Main extends JFrame {
                             return;
                         }
                         //r = milisecunde
-								
+
 								/*
 								 *   1 zi = 24 h; 1 h = 60 min = 3600 sec = 3600000 milisec
 								 */
@@ -815,7 +816,7 @@ public class Main extends JFrame {
                             return;
                         }
                         //r = milisecunde
-								
+
 								/*
 								 *   1 zi = 24 h; 1 h = 60 min = 3600 sec = 3600000 milisec
 								 */
@@ -937,7 +938,7 @@ public class Main extends JFrame {
                             return;
                         }
                         //r = milisecunde
-								
+
 								/*
 								 *   1 zi = 24 h; 1 h = 60 min = 3600 sec = 3600000 milisec
 								 */
@@ -1039,7 +1040,7 @@ public class Main extends JFrame {
                             return;
                         }
                         //r = milisecunde
-										
+
 										/*
 										 *   1 zi = 24 h; 1 h = 60 min = 3600 sec = 3600000 milisec
 										 */
@@ -1508,7 +1509,7 @@ public class Main extends JFrame {
                         return;
                     }
                     //r = milisecunde
-							
+
 							/*
 							 *   1 zi = 24 h; 1 h = 60 min = 3600 sec = 3600000 milisec
 							 */
@@ -1528,11 +1529,9 @@ public class Main extends JFrame {
 
             }
         });
-	   
+
 	   /*Aici adaug submeniul Plati la meniul Adaugare*/
 
-        lblcnp.setVisible(false);
-        lblcota.setVisible(false);
         mi = m.add(new JMenuItem("Plati", 'p'));
 
         mi.addActionListener(new ActionListener() {
@@ -1540,7 +1539,8 @@ public class Main extends JFrame {
 
                 lblsold.setVisible(true);
                 sold.setVisible(true);
-
+                lblcnp.setVisible(false);
+                lblcota.setVisible(false);
                 lblnume.setVisible(false);
                 lblprenume.setVisible(false);
                 lbldatain.setVisible(false);
@@ -1575,16 +1575,16 @@ public class Main extends JFrame {
                 txtdataout.setVisible(false);
                 txtdataplata.setVisible(true);
                 txtsumaachitata.setVisible(true);
-			 
-			 
+
+
 			/*String s = cal.getDate().toString();
-			
-			String[] v = s.split(" ");		
+
+			String[] v = s.split(" ");
 			String[] luni = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split(" ");
 			String[] lunile = "01 02 03 04 05 06 07 08 09 10 11 12".split(" ");
-			
+
 			int j = 0; for(int i = 0; i < 12; i++) { if(v[1].equals(luni[i])) { j = i; break; } } //identificam indexul lunii curente
-				
+
 			 txtdataplata.setText(v[5] + "-" + lunile[j] + "-" + v[2]);*/
 
                 txtsumaachitata.setText("");
@@ -1661,10 +1661,10 @@ public class Main extends JFrame {
 
             }
         });
-	   
-	   
-	   
-	    
+
+
+
+
 	  /*Adaug meniu Vizualizare */
 
         m = new JMenu("Vizualizare");
@@ -1757,7 +1757,7 @@ public class Main extends JFrame {
                 viz.setvisible(true);
             }
         });
-	 
+
 	    /*Vizualizare plati*/
         mi = m.add(new JMenuItem("Plati", 'p'));
         //mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, Event.CTRL_MASK));
