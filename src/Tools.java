@@ -1,8 +1,7 @@
 
 
 import java.awt.*;
-//import java.awt.Dimension;
-//import java.awt.FileDialog;
+import java.util.regex.Pattern;
 import java.io.BufferedWriter;
 import java.io.File;
 //import java.io.FileInputStream;
@@ -51,7 +50,8 @@ public class Tools
 {
 	
 	//bd
-	Connection dbCon = null; Statement stmt = null, stmt1 = null;	ResultSet rs = null, rs1 = null;
+	Connection dbCon = null; Statement stmt = null, stmt1 = null; static Statement stmts = null; ResultSet rs = null, rs1 = null;
+	static ResultSet rss;
 	public int nr; public int ID; public static JLabel lblsumavalcalc, lblsumadb;
 	String header[] = { "Nume prenume", "Valoare", "Valoare cotă", "CNP", "Data înc.", "Data sf." };
 	static Frame fr = null; static LocalDate din = null, dout = null; Float valdebac = 0.0f; Float valdeb = 0.0f;     
@@ -75,7 +75,7 @@ public class Tools
         try
         {
 			dbCon = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/debitenew1", "root", "danvicoveanu");
-			stmt = dbCon.createStatement(); stmt1 = dbCon.createStatement();
+			stmt = dbCon.createStatement(); stmt1 = dbCon.createStatement(); stmts = dbCon.createStatement();
 		}
         catch (SQLException e) { JOptionPane.showMessageDialog(new JFrame(), e.getMessage()); }
 	}
@@ -86,8 +86,8 @@ public class Tools
 		 try
 			{
 			 	nr = CountPersoane(); ob = new String[nr];
-			 	rs = stmt.executeQuery("select nume from persoane");
-		    	for(int i = 0; i<nr; i++) { rs.next(); ob[i] = rs.getString(1); } 	//selectia rs o introduc in ob[i] care este un vector de string   
+			 	rs = stmt.executeQuery("select IdPers,nume,prenume from persoane");
+		    	for(int i = 0; i<nr; i++) { rs.next(); ob[i] = rs.getString(1)+ "|" +rs.getString(2) + " " +rs.getString(3); } 	//selectia rs o introduc in ob[i] care este un vector de string
 		    }
 			catch (SQLException e)
 			{ 
@@ -104,9 +104,9 @@ public class Tools
 		 try
 			{
 			 	nr = CountDebitePers(id); ob = new String[nr];
-			 	rs = stmt.executeQuery("select valoareinit from debite where IdPers = " + Integer.toString(id));
+			 	rs = stmt.executeQuery("select IdDebite,valoareinit from debite where IdPers = " + Integer.toString(id));
 		    	for(int i = 0; i<nr; i++)
-		    	{ rs.next(); ob[i] = rs.getString(1); } //selectia rs o introduc in ob[i] care este un vector de string   
+		    	{ rs.next(); ob[i] = rs.getString(1) + "|" + rs.getString(2); } //selectia rs o introduc in ob[i] care este un vector de string
 		    }
 			catch (SQLException e)
 			{ 
@@ -159,32 +159,32 @@ public class Tools
 		 return ob;	 
 	}
 	
-	public String GetSold(String deb)
+	public String GetSold(String valinit, int iddeb)
 	{
 	    //m("'"+deb+"'");
 		
 		    try
 			{
-			 	rs1 = stmt1.executeQuery("select SoldDeb from debite where valoareinit like '" + deb + "%'");
+			 	rs1 = stmt1.executeQuery("select SoldDeb from debite where valoareinit like '" + valinit + "%' and IdDebite = " + Integer.toString(iddeb));
 			 	if(rs1.next()) return Float.toString(rs1.getFloat(1));
 			}
 			catch (SQLException e)
 			{ 
-				//JOptionPane.showMessageDialog(new JFrame(), e.getMessage());
+				JOptionPane.showMessageDialog(new JFrame(), e.getMessage());
 			}
 		 
 		 //m(Float.toString(s));
 		 return "0.0"; 
 	}
 	
-	//
-	int GetIdDebit(int idpers, int ind)
+	//ma ajuta generand un id nou
+	static int GetIdDebit(int idpers, int ind)
 	{		
 		try
 		{
-			rs = stmt.executeQuery("select IdDebite, IdPers from debite where IdPers = " + Integer.toString(idpers));
-	    	for(int i = 0; i<ind; i++) rs.next(); //navigam la indexul debitului	    	
-	    	return rs.getInt(1);	    	
+			rss = stmts.executeQuery("select IdDebite from debite where IdPers = " + Integer.toString(idpers));
+	    	for(int i = 0; i<ind; i++) rss.next(); //navigam la ultimul index debitelor
+	    	return rss.getInt(1);
 		}
 		catch (SQLException e)
 		{ 
@@ -193,7 +193,7 @@ public class Tools
 		
 		return 0;
 	}
-	
+
 	
 	//
 	int GetPersPlata(int ind)
@@ -313,7 +313,7 @@ public class Tools
     		rs.next(); //aduce date din baza
     		obj[i][0] = String.valueOf(rs.getInt(1)); obj[i][1] = rs.getString(2); obj[i][2] = rs.getString(3); obj[i][3] = rs.getString(4);
     	}
-    	   	
+
     	//rs.close();
     	
 	} catch (SQLException e) { JOptionPane.showMessageDialog(new JFrame(), e.getMessage()); }			
@@ -835,6 +835,7 @@ public class Tools
 			
 			return len;
 		}
+
 		
 		int CountCote()
 		{

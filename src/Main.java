@@ -1,5 +1,4 @@
 
-
 import java.awt.*;
 import java.awt.event.*;
 import java.math.RoundingMode;
@@ -8,26 +7,13 @@ import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
-
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
+import java.util.regex.Pattern;
+import javax.swing.*;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.Box;
 
 import org.freixas.jcalendar.*;
-
 
 public class Main extends JFrame {
 
@@ -47,7 +33,7 @@ public class Main extends JFrame {
             slblnume, slblvalcalc, slblcota, slblsumai, slbldatain, slbldataout, lblsumavalcalc;
     private JLabel lblsumadb;
     private JLabel lbldataplata, lblsumaachitata, lbldebite, lblsold;
-
+    private ComboItem it;
     private JTextField temp, txtnume, txtprenume, txtsuma, txtcota, txtdatain, txtdataout, txtcnp, txtpersoana, txtvalcalc, stxtnume, stxtvalcalc, stxtcota, stxtsumai, stxtdatain, stxtdataout;
 
     //more..
@@ -56,21 +42,32 @@ public class Main extends JFrame {
 
     private JCalendar cal;
     private MyDateListener listener;
-    private JComboBox<String> compersoana, comcota, comdebite, mcomcota;
+    private JComboBox compersoana, comdebite; JComboBox<String> comcota, mcomcota; //ComboBoxModel model;
     JButton btnarr;
     private JButton btnnext, btnback, btnsaven, btnsaver, btndel, btnres, btnclose, btnvalcalc, btnmore, mbtnvalcalc, mbtncalcfinal;
     private int currentrow = 1;
     DefaultTableModel tab;
-
+    String[] str;
 
     public void Refresh() {
+
+        //if(compersoana == null) return;
+
         compersoana.removeAllItems();
         comcota.removeAllItems();
         mcomcota.removeAllItems();
         int x = t.CountPersoane();
+        //System.out.println(x);
+
         for (int j = 0; j < x; j++) {
-            compersoana.addItem(t.GetP()[j]);
+            //compersoana.addItem(t.GetP()[j]);
+            //System.out.println(t.GetP()[j]);
+            //System.out.println(t.GetP()[j].split(Pattern.quote("|"))[1]);
+            str = t.GetP();
+            //System.out.println(s);
+            compersoana.addItem(new ComboItem(Integer.parseInt(str[j].split(Pattern.quote("|"))[0]), str[j].split(Pattern.quote("|"))[1]));
         }
+
         int y = t.CountCote();
         for (int k = 0; k < y; k++) {
             comcota.addItem(t.GetC()[k]);
@@ -81,7 +78,7 @@ public class Main extends JFrame {
 
         //selectare persoana a platii curente
         if (t.CountPlati() > 0)
-            compersoana.setSelectedIndex(t.GetPersPlata(currentrow) - 1);//curent row este din selectia din plati pt. IdPers selectat respectiv numele din combo
+            compersoana.setSelectedIndex(t.GetPersPlata(currentrow));//curent row este din selectia din plati pt. IdPers selectat respectiv numele din combo
     }
 
 
@@ -113,6 +110,8 @@ public class Main extends JFrame {
         //calendar
         cal = new JCalendar(JCalendar.DISPLAY_DATE, true);
         cal.setDayFont(new Font("Arial", Font.PLAIN, 8));
+
+        //model = new DefaultComboBoxModel();
 
         lblnume = new JLabel();
         lblprenume = new JLabel();
@@ -154,9 +153,9 @@ public class Main extends JFrame {
         txtvalcalc = new JTextField();
         btnvalcalc = new JButton();
         btnvalcalc.setText("Calcul");
-        compersoana = new JComboBox<String>();
+        compersoana = new JComboBox();
         comcota = new JComboBox<String>();
-        comdebite = new JComboBox<String>();
+        comdebite = new JComboBox(); //comdebite.setName("comdebite");
         btnarr = new JButton();
         btnnext = new JButton();
         btnback = new JButton();
@@ -542,7 +541,10 @@ public class Main extends JFrame {
                     lblcr.setText(String.format("<html><font color='red'>%s / %s</font></html>", x, Integer.toString(x)));
                     currentrow = x;
                     Tools.m("Adaugarea s-a facut cu succes");
-                } else if (frm.getTitle() == "Adaugare plati") {
+                }
+
+                else if (frm.getTitle() == "Adaugare plati")
+                {
                     //validare
                     if (sold.getText().equals("-") || sold.getText().equals("0.0")) {
                         if (txtsumaachitata.getText().isEmpty() || (Float.parseFloat(txtsumaachitata.getText()) > Float.parseFloat(comdebite.getSelectedObjects()[0].toString()))) {
@@ -558,22 +560,23 @@ public class Main extends JFrame {
                         }
                     }
 
-                    //ID, IdDebite, IdPers, data_platii, suma_achitata
-                    int iddebit = t.GetIdDebit(compersoana.getSelectedIndex() + 1, comdebite.getSelectedIndex() + 1);
-                    t.InsertPlata(iddebit, compersoana.getSelectedIndex() + 1, txtdataplata.getText(), txtsumaachitata.getText());
+                    //ID, IdDebite, IdPers, data_platii, suma_achitata         comdebite.getSelectedIndex() + 1
+                    int idpers = ((ComboItem)compersoana.getSelectedItem()).id;
+                    int iddebit = t.GetIdDebit(idpers, ((ComboItem)comdebite.getSelectedItem()).id);
+                    t.InsertPlata(iddebit, idpers, txtdataplata.getText(), txtsumaachitata.getText());
                     //try { Thread.sleep(1000);	} catch (InterruptedException e1) {	} //1 sec
                     x = t.CountPlati();
                     // lblcr.setText(String.format("<html><font color='red'>%s / %s</font></html>", x, Integer.toString(x)));
                     currentrow = x;
                     //refresh comdebite
-                    x = comdebite.getSelectedIndex();
+                    //x = comdebite.getSelectedIndex();
                     comdebite.removeAllItems();
-                    int id = compersoana.getSelectedIndex() + 1;// este indexul personei curente(alese)
-                    int y = t.CountDebitePers(id);
-                    String[] debite = t.GetDebitePers(id);
+                    //int id = compersoana.getSelectedIndex() + 1;// este indexul personei curente(alese)
+                    int y = t.CountDebitePers(idpers);
+                    String[] debite = t.GetDebitePers(idpers);
                     for (int j = 0; j < y; j++) comdebite.addItem(debite[j]);
 
-                    comdebite.setSelectedIndex(x);
+                    comdebite.setSelectedIndex(idpers-1);
 
                     Tools.m("Adaugarea s-a facut cu succes");
                 }
@@ -1183,8 +1186,11 @@ public class Main extends JFrame {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
 
                     //populare debite cu debitele primei persoane din compersoana
-                    comdebite.removeAllItems(); //comdebite.removeAllItems();
+                    comdebite.removeAllItems();
                     int id = compersoana.getSelectedIndex() + 1;// este indexul personei curente(alese)
+
+                    //System.out.println(id);
+
                     int y = t.CountDebitePers(id);//numar debitele corespunzatore pentru un IdPers ales(am IdPers cu index 1 cinci si cinci debite adica 5 IdDebite)
                     if (frm.getTitle() == "Adaugare plati") {
                         //Tools.m("a");
@@ -1194,7 +1200,10 @@ public class Main extends JFrame {
                         }// nu am debit pt. persoana aleasa
                         else {
                             String[] debite = t.GetDebitePers(id);
-                            for (int j = 0; j < y; j++) comdebite.addItem(debite[j]);
+                            //for (int j = 0; j < y; j++) comdebite.addItem(debite[j]);
+                            for (int j = 0; j < y; j++)
+                                comdebite.addItem( new ComboItem(Integer.parseInt(debite[j].split(Pattern.quote("|"))[0]), debite[j].split(Pattern.quote("|"))[1]) );
+
                             comdebite.setSelectedIndex(0);
                             btnsaven.setEnabled(true);
                             btnsaver.setEnabled(true);
@@ -1209,16 +1218,39 @@ public class Main extends JFrame {
         });
 
 
-        //actualizez sold din fr plati care vine din fr debite; sunnt in frm
-        comdebite.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-                if (e.getStateChange() == ItemEvent.SELECTED || e.getStateChange() == ItemEvent.DESELECTED) {
-                    //Tools.m(comdebite.getSelectedItem().toString());
-                    if (comdebite.getItemCount() == 0) sold.setText("-"); //NU AM DEBIT
-                    else sold.setText(t.GetSold(comdebite.getSelectedItem().toString()));
-                }
+      /*  comdebite.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+
+                Object elem = (Object) comdebite.getSelectedItem();
+                Tools.m(Integer.toString(comdebite.getSelectedIndex()));
             }
         });
+        */
+        //actualizez sold din fr plati care vine din fr debite; sunnt in frm
+        comdebite.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+
+                JComboBox comboBox = (JComboBox) e.getSource();//vad pe ce combo sunt
+                //System.out.println(comboBox.getName());
+               // Tools.m(comboBox.getName());
+                //comboBox.addItem(new Item(0, "111"));
+                ComboItem item = (ComboItem) comboBox.getSelectedItem();//il trimit in Tools sa-mi aduca selectia itemului(fost string) cu soldurile
+                //System.out.println(item.index + " : " + item.text);
+
+                //Tools.m(comdebite.getSelectedItem().toString());
+                if (comdebite.getItemCount() == 0) sold.setText("-"); //NU AM DEBIT
+                //else sold.setText(t.GetSold(comdebite.getSelectedItem().toString(),0));
+                else sold.setText(t.GetSold(item.text, item.id));
+            }
+
+
+        });
+
+
+
+
+
 
 
         //Meniu principal
@@ -1310,6 +1342,7 @@ public class Main extends JFrame {
                 frm.setVisible(true);
 
                 int x = t.CountPersoane();
+
                 if (x > 0) {
                     currentrow = 1; //0 este cazul cind nu sunt pers in baza
                     lblcr.setText(String.format("<html><font color='red'>%s / %s</font></html>", Integer.toString(currentrow), Integer.toString(x)));
@@ -1617,7 +1650,8 @@ public class Main extends JFrame {
                     }//btnsaver.setEnabled(false); nu am debit pt. persoana aleasa
                     else {
                         String[] debite = t.GetDebitePers(id);
-                        for (int j = 0; j < y; j++) comdebite.addItem(debite[j]);
+                        for (int j = 0; j < y; j++)
+                            comdebite.addItem(new ComboItem(Integer.parseInt(debite[j].split(Pattern.quote("|"))[0]), debite[j].split(Pattern.quote("|"))[1]));
                         btnsaven.setEnabled(true); //btnsaver.setEnabled(true);
                     }
                 } else {
