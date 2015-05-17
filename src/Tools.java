@@ -145,7 +145,7 @@ public class Tools
 			 	rs = stmt.executeQuery("select valoareinit,IdPers from debite");
 			 	rs1 = stmt1.executeQuery("select IdPers,suma_achitata from plati");
 			 	
-		    	for(int i = 0; i<nr; i++) 
+		    	if(rs1.isBeforeFirst()) for(int i = 0; i<nr; i++)
 		    	{ 
 		    		rs.next(); rs1.next();
 		    		ob[i] = String.format("%.2f", Float.parseFloat(rs.getString(1))-Float.parseFloat(rs1.getString(2)));
@@ -555,13 +555,28 @@ public class Tools
 			try
 			{
 				stmt.executeUpdate("update debite set datain = '"+datain+"', dataout = '"+dataout+"', suma = "+suma+", valoareinit = '"+val+"', IdPers="+ Integer.toString(id)+", IdCote="+ Integer.toString(idcota)+" where IdDebite = " + Integer.toString(cr));
-				return true;
+				//return true;
 			}
 			catch (SQLException e)
 			{
 				m(e.getMessage());
-				return false;
+				//return false;
 			}
+            //
+
+            try
+            {
+                stmt.executeUpdate("update debite set SoldDeb = debite.valoareinit where IdDebite = " + Integer.toString(cr));
+                return true;
+            }
+            catch (SQLException e)
+            {
+                m(e.getMessage());
+                return false;
+            }
+
+            //UPDATE debite SET debite.SoldDeb = debite.valoareinit
+           // WHERE debite.IdDebite = NEW.IdDebite;
 		}
 		
 		
@@ -889,9 +904,9 @@ public class Tools
 		{
 			int len = 0;
 			try {
-				rs = stmt.executeQuery("SELECT IdDebite from debite where IdPers = " + Integer.toString(idpers));
+				rs = stmt.executeQuery("select IdDebite from debite where IdPers = " + Integer.toString(idpers));
 				while(rs.next()) len++;	//prima val a lui len este 1
-			} catch (SQLException e) { JOptionPane.showMessageDialog(new JFrame(), e.getMessage()); }
+			} catch (SQLException e) {  }
 			return len;
 		}
 		
@@ -1188,9 +1203,7 @@ public class Tools
                  nume +"%' and debite.datain >= '"+datain+"' and debite.dataout <= '"+dataout+"' and plati.data_platii != '0000-00-00' ORDER BY persoane.nume"
     		*/
     		
-    		
-    		
-    		
+
     		//SELECTIE DOAR PENTRU PLATI
     		/*SELECT debite.IdDebite, debite.IdPers,debite.datain, debite.dataout, debite.valoare, plati.data_platii, plati.suma_achitata,(debite.valoare - plati.suma_achitata) AS debit
               FROM debite RIGHT JOIN plati ON debite.IdDebite = plati.IdDebite
@@ -1224,24 +1237,43 @@ public class Tools
                for(int i=0; i<nr; i++)
  	    	   {
              	   rs.next(); //aduce date din baza
-             	   
+
  	    		   ob[i][0] = rs.getString(3) + " " + rs.getString(4); //numele
  	               ob[i][1] = rs.getString(5); //data in
  	               ob[i][2] = rs.getString(6); //data out
  	               ob[i][3] = rs.getString(7); //data platii
- 	               ob[i][4] = rs.getString(8); //sumai  
- 	               ob[i][5] = String.format("%.2f", Float.parseFloat(rs.getString(9))); //accesorii 
- 	               ob[i][6] = rs.getString(10); //valoareainit=de fapt este Db+Acesorii
- 	               ob[i][7] = rs.getString(11); //suma achit              
- 	               
- 	              if(rs.getString(2).equals(iddebit)) { ob[i][8] = ""; sum += Float.parseFloat(ob[i][7]); }
+                  // System.out.println("4");
+ 	               ob[i][4] = rs.getString(8); //sumai
+                   //System.out.println("5");
+ 	               ob[i][5] = String.format("%.2f", Float.parseFloat(rs.getString(9))); //accesorii
+                  // System.out.println("6");
+ 	               ob[i][6] = String.valueOf(rs.getFloat(10)); //valoareainit=de fapt este Db+Acesorii
+                   //System.out.println("7");
+ 	               ob[i][7] = rs.getString(11); //suma achit
+
+
+                  // System.out.println(rs.getString(2) + "|" + iddebit);
+
+
+
+
+ 	              if( rs.getString(2).equals(iddebit)) {
+
+                      //System.out.println("mmmm");
+                      ob[i][8] = "";
+
+                      sum += Float.parseFloat(ob[i][7]);
+
+                  }
 	              else //s-a schimbat id-ul debitului
 	              {
-	            	  ob[i-1][8] = String.format("%.2f", Float.parseFloat(ob[i-1][6]) - sum);
+
+	            	  if(i>0) ob[i-1][8] = String.format("%.2f", Float.parseFloat(ob[i - 1][6]) - sum);
 	            	  sum = Float.parseFloat(ob[i][7]); iddebit = rs.getString(2); //memorez noul iddebit
-	              }          	
+	              }
+
  	    	   }
-               
+
              }
              catch(Exception ex) { m(ex.getMessage()); }
              
@@ -1275,7 +1307,7 @@ public class Tools
             //   try { v += Float.parseFloat(ob[i][6]); valdeb = ob[i][6]; } catch(Exception e) {}
             //}
              
-             ob[nr][6] = Float.toString(valdebac); //valoareainit de fapt este Db+accessorii
+             ob[nr][6] = String.format("%.2f", valdebac); //valoareainit de fapt este Db+accessorii
              
              ob[nr][5] = String.format("%.2f", Float.parseFloat(ob[nr][6])-Float.parseFloat(ob[nr][4])); //accesorii
              

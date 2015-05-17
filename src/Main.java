@@ -12,7 +12,6 @@ import javax.swing.*;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.table.DefaultTableModel;
-
 import org.freixas.jcalendar.*;
 
 public class Main extends JFrame {
@@ -85,7 +84,7 @@ public class Main extends JFrame {
     public Main() {
 
         fr = new Frame(); //fr.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        fr.settitle("Calcul Debite");
+        //fr.settitle("Calcul Debite");
         //fr.setsize(900, 700);
         fr.setsize(900, 500);
         fr.setlayout();
@@ -93,13 +92,14 @@ public class Main extends JFrame {
         //
         //comune
         viz = new Frame();
-
+        viz.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         viz.setsize(400, 300);
         viz.setlocationRelativeTo(null); //centrare
 
         //
         frm = new JFrame();
-        frm.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        //frm.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frm.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
         frm.setLocationRelativeTo(null); //centrare
         frm.setLayout(null);
@@ -300,7 +300,8 @@ public class Main extends JFrame {
 
         //more...
         more = new JFrame();
-        more.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        //more.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        more.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         more.setLocationRelativeTo(null); //centrare
         more.setLayout(null);
         more.setTitle("More...");
@@ -489,7 +490,9 @@ public class Main extends JFrame {
                     //lblcr.setText(String.format("<html><font color='red'>%s / %s</font></html>", x, x));
                     currentrow = x;
                     Tools.m("Adaugarea s-a facut cu succes");
-                } else if (frm.getTitle() == "Adaugare debite") {
+                }
+
+                else if (frm.getTitle() == "Adaugare debite") {
                     btnvalcalc.doClick();
                     if (Tools.ValidareAdaugareDebite(txtdatain.getText(), txtdataout.getText(), txtsuma.getText()) == false) {
                         JOptionPane.showMessageDialog(new JFrame(), "Introdu datele corecte! (yyyy-MM-dd)");
@@ -501,7 +504,8 @@ public class Main extends JFrame {
                     String ssuma = txtsuma.getText();
                     if (ssuma.isEmpty()) ssuma = "0";
 
-                    t.InsertD(txtdatain.getText(), sdataout, ssuma, txtvalcalc.getText(), compersoana.getSelectedIndex() + 1, comcota.getSelectedIndex() + 1);
+                    t.InsertD(txtdatain.getText(), sdataout, ssuma, txtvalcalc.getText(), compersoana.getSelectedIndex() + 1,
+                            comcota.getSelectedIndex() + 1);
 
                     x = t.CountDebite();
 
@@ -561,9 +565,13 @@ public class Main extends JFrame {
                     }
 
                     //ID, IdDebite, IdPers, data_platii, suma_achitata         comdebite.getSelectedIndex() + 1
-                    int idpers = ((ComboItem)compersoana.getSelectedItem()).id;
+                    int idpers = compersoana.getSelectedIndex() + 1;
+                    int y = t.CountDebitePers(idpers);
+                    if(y ==0) return;
                     int iddebit = t.GetIdDebit(idpers, ((ComboItem)comdebite.getSelectedItem()).id);
+                    //System.out.println(idpers + "-" + iddebit);
                     t.InsertPlata(iddebit, idpers, txtdataplata.getText(), txtsumaachitata.getText());
+
                     //try { Thread.sleep(1000);	} catch (InterruptedException e1) {	} //1 sec
                     x = t.CountPlati();
                     // lblcr.setText(String.format("<html><font color='red'>%s / %s</font></html>", x, Integer.toString(x)));
@@ -572,11 +580,15 @@ public class Main extends JFrame {
                     //x = comdebite.getSelectedIndex();
                     comdebite.removeAllItems();
                     //int id = compersoana.getSelectedIndex() + 1;// este indexul personei curente(alese)
-                    int y = t.CountDebitePers(idpers);
-                    String[] debite = t.GetDebitePers(idpers);
-                    for (int j = 0; j < y; j++) comdebite.addItem(debite[j]);
 
-                    comdebite.setSelectedIndex(idpers-1);
+
+                   // System.out.println(x + "-" + y);
+                    String[] debite = t.GetDebitePers(idpers);
+
+                    for (int j = 0; j < y; j++)
+                    comdebite.addItem( new ComboItem(Integer.parseInt(debite[j].split(Pattern.quote("|"))[0]), debite[j].split(Pattern.quote("|"))[1]) );
+
+                    comdebite.setSelectedIndex(iddebit-1);
 
                     Tools.m("Adaugarea s-a facut cu succes");
                 }
@@ -612,7 +624,10 @@ public class Main extends JFrame {
                     if (t.UpdateP(currentrow, txtcnp.getText(), txtnume.getText(), txtprenume.getText()))
                         Tools.m("Modificarea s-a facut cu succes");
                     else Tools.m("Eroare la modificare");
-                } else if (frm.getTitle() == "Adaugare debite") {
+                }
+
+
+                else if (frm.getTitle() == "Adaugare debite") {
 
                     //validare DEBITE
                     //if(txtsumaachitata.getText().isEmpty() || (Float.parseFloat(txtsumaachitata.getText()) > Float.parseFloat(comdebite.getSelectedObjects()[0].toString())))
@@ -631,7 +646,8 @@ public class Main extends JFrame {
                     }
                     //
                     // Tools.m(txtvalcalc.getText());
-                    if (t.UpdateD(currentrow, txtdatain.getText(), txtdataout.getText(), txtsuma.getText(), txtvalcalc.getText(), compersoana.getSelectedIndex() + 1, comcota.getSelectedIndex() + 1))
+                    if (t.UpdateD(currentrow, txtdatain.getText(), txtdataout.getText(), txtsuma.getText(), txtvalcalc.getText(),
+                            compersoana.getSelectedIndex() + 1, comcota.getSelectedIndex() + 1))
                         Tools.m("Modificarea s-a facut cu succes");
                     else Tools.m("Eroare la modificare");
                 } else if (frm.getTitle() == "Adaugare cote") {
@@ -1181,9 +1197,11 @@ public class Main extends JFrame {
         });
 
 
-        compersoana.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-                if (e.getStateChange() == ItemEvent.SELECTED) {
+        compersoana.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+
+
 
                     //populare debite cu debitele primei persoane din compersoana
                     comdebite.removeAllItems();
@@ -1202,7 +1220,7 @@ public class Main extends JFrame {
                             String[] debite = t.GetDebitePers(id);
                             //for (int j = 0; j < y; j++) comdebite.addItem(debite[j]);
                             for (int j = 0; j < y; j++)
-                                comdebite.addItem( new ComboItem(Integer.parseInt(debite[j].split(Pattern.quote("|"))[0]), debite[j].split(Pattern.quote("|"))[1]) );
+                                comdebite.addItem(new ComboItem(Integer.parseInt(debite[j].split(Pattern.quote("|"))[0]), debite[j].split(Pattern.quote("|"))[1]));
 
                             comdebite.setSelectedIndex(0);
                             btnsaven.setEnabled(true);
@@ -1214,7 +1232,7 @@ public class Main extends JFrame {
                         btnsaver.setEnabled(true);
                     }
                 }
-            }
+
         });
 
 
@@ -1231,26 +1249,26 @@ public class Main extends JFrame {
 
             public void actionPerformed(ActionEvent e) {
 
-                JComboBox comboBox = (JComboBox) e.getSource();//vad pe ce combo sunt
-                //System.out.println(comboBox.getName());
-               // Tools.m(comboBox.getName());
-                //comboBox.addItem(new Item(0, "111"));
-                ComboItem item = (ComboItem) comboBox.getSelectedItem();//il trimit in Tools sa-mi aduca selectia itemului(fost string) cu soldurile
-                //System.out.println(item.index + " : " + item.text);
-
                 //Tools.m(comdebite.getSelectedItem().toString());
-                if (comdebite.getItemCount() == 0) sold.setText("-"); //NU AM DEBIT
+                if (comdebite.getItemCount() == 0)
+                {
+                    sold.setText("-"); //NU AM DEBIT
+                }
                 //else sold.setText(t.GetSold(comdebite.getSelectedItem().toString(),0));
-                else sold.setText(t.GetSold(item.text, item.id));
+                else
+                {
+                    JComboBox comboBox = (JComboBox) e.getSource();//vad pe ce combo sunt
+                    //System.out.println(comboBox.getName());
+                    // Tools.m(comboBox.getName());
+                    //comboBox.addItem(new Item(0, "111"));
+                    ComboItem item = (ComboItem) comboBox.getSelectedItem();//il trimit in Tools sa-mi aduca selectia itemului(fost string) cu soldurile
+                    //System.out.println(item.index + " : " + item.text);
+                    sold.setText(t.GetSold(item.text, item.id));
+                }
             }
 
 
         });
-
-
-
-
-
 
 
         //Meniu principal
@@ -1511,8 +1529,8 @@ public class Main extends JFrame {
                 frm.setSize(450, 370);
                 frm.setVisible(true);
 
-
                 if (t.CountDebite() > 0) {
+
                     currentrow = 1;
                     lblcr.setText(String.format("<html><font color='red'>%s / %s</font></html>", Integer.toString(currentrow), Integer.toString(t.CountDebite())));
                     //apelez clasa Debit
@@ -1523,8 +1541,8 @@ public class Main extends JFrame {
                     txtsuma.setText(d.suma);
                     txtvalcalc.setText(d.valoare);
 
-
                 } else {
+                    //System.out.println("ok");
                     lblcr.setText(String.format("<html><font color='red'>0 / 0</font></html>"));
                     currentrow = 0;
                 }
