@@ -975,8 +975,8 @@ public class Tools
             	rs = stmt.executeQuery("SELECT persoane.nume, persoane.prenume, debite.valoareinit, cote.valcote, debite.suma, debite.datain, debite.dataout" +
             	" FROM (persoane LEFT JOIN debite ON persoane.IdPers=debite.IdPers) LEFT JOIN cote ON debite.IdCote=cote.IdCote WHERE " +
             	"(persoane.nume like '" + stxtnume + "%' and debite.valoare like '" + stxtvalcalc + "%' and cote.valcote like '" + stxtcota +
-            	"%' and debite.suma like '" + stxtsumai + "%' and debite.datain between '" + stxtdatain + "' and '" + stxtdataout + "') ORDER BY persoane.nume");
-            }
+            	"%' and debite.suma like '" + stxtsumai + "%' and '"+ stxtdatain +"' <= debite.datain and debite.datain <= '"+ stxtdataout + "') ORDER BY persoane.nume");
+            }//(min<= expr AND expr<= max)  " + stxtdatain + "' and '" + stxtdataout + "
             
             try
             {
@@ -1218,7 +1218,7 @@ public class Tools
     		 
     		rs = stmt.executeQuery("SELECT persoane.IdPers, debite.IdDebite, persoane.nume, persoane.prenume, debite.datain, debite.dataout, IFNULL(plati.data_platii, '0000-00-00') AS data_platii, "+
     	             "debite.suma, debite.valoareinit, IFNULL(plati.suma_achitata, '0') AS suma_achitata FROM (persoane RIGHT JOIN debite ON persoane.IdPers=debite.IdPers) LEFT JOIN plati ON debite.IdDebite=plati.IdDebite "+
-    	             "where persoane.nume like '"+ nume +"%' and debite.datain >= '"+datain+"' and debite.dataout <= '"+dataout+"' ORDER BY persoane.nume, debite.valoareinit, plati.ID");
+    	             "where persoane.nume like '"+ nume +"%' and '"+datain+"' <= debite.datain and debite.datain <= '"+dataout+"' ORDER BY persoane.nume, debite.valoareinit, plati.ID");
     		
     		String iddebit = ""; nr = 0;
     		while(rs.next()) { if(nr==0) /*doar primul iddebit*/ iddebit = rs.getString(2); nr++; /*numar cate randuri are rs*/ }
@@ -1227,8 +1227,8 @@ public class Tools
     		//rs al doilea ma duce pe primul rind
              rs = stmt.executeQuery("SELECT persoane.IdPers, debite.IdDebite, persoane.nume, persoane.prenume, debite.datain, debite.dataout, IFNULL(plati.data_platii, '0000-00-00') AS data_platii,"+
              "debite.suma, debite.valoareinit-debite.suma AS accesorii, debite.valoareinit, IFNULL(plati.suma_achitata, '0') AS suma_achitata FROM (persoane RIGHT JOIN debite ON persoane.IdPers=debite.IdPers) LEFT JOIN plati ON debite.IdDebite=plati.IdDebite "+
-             "where persoane.nume like '"+ nume +"%' and debite.datain >= '"+datain+"' and debite.dataout <= '"+dataout+"' ORDER BY persoane.nume, debite.valoareinit, plati.ID");
-            
+             "where persoane.nume like '"+ nume +"%' and '"+datain+"' <= debite.datain and debite.datain <= '"+dataout+"' ORDER BY persoane.nume, debite.valoareinit, plati.ID");
+            //WHERE DATE(order_datetime) BETWEEN '2004-10-01' AND '2004-10-03';
              Float sum = 0.0f;
              
              try
